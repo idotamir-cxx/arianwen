@@ -1,0 +1,57 @@
+1
+    Enter the dark cave -> 2
+    Follow the forest path -> 3
+    Return to village -> 4
+
+2
+    Light a torch -> 5
+    Feel along the walls -> 6
+    Call out into the darkness -> 7
+
+3
+    Climb the tall tree -> 8
+    Follow the river -> 9
+    Rest under the oak -> 10
+
+4
+    # This is an ending node (no choices)
+
+5
+    Explore deeper into the cave -> 11
+    Examine the cave paintings -> 12
+
+6
+    Continue forward carefully -> 13
+    Turn back -> 1
+
+7
+    # Another ending node
+
+8
+    # Ending node
+
+9
+    Cross the river -> 14
+    Follow the riverbank -> 15
+
+10
+    # Ending node
+
+11
+    # Ending node
+
+12
+    Touch the ancient symbols -> 16
+    Leave the paintings alone -> 11
+
+13
+    # Ending node
+
+14
+    # Ending node
+
+15
+    # Ending node
+
+16
+    # Ending node
