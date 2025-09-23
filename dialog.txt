@@ -1,4 +1,4 @@
-1:You stand at a crossroads in the ancient forest. Three paths stretch before you: a dark cave entrance to your left, a winding forest trail ahead, and the familiar path back to your village.
+:You stand at a crossroads in the ancient forest. Three paths stretch before you: a dark cave entrance to your left, a winding forest trail ahead, and the familiar path back to your village.
 
 2:The cave mouth yawns before you, pitch black and forbidding. You can hear the faint sound of dripping water echoing from within. The air feels cold and damp against your skin.
 

@@ -1,57 +1,78 @@
+# tree.txt - Enhanced Choice Tree File Format
+# Node definitions followed by indented choices
+# Regular format: "choice_text -> target_node_id"
+# Ability check format: "choice_text (Ability check) -> success_node,failure_node"
+
 1
     Enter the dark cave -> 2
-    Follow the forest path -> 3
-    Return to village -> 4
+    Try to climb the cliff face (Strength check) -> 3,4
+    Follow the forest path -> 5
+    Return to village -> 6
 
 2
-    Light a torch -> 5
-    Feel along the walls -> 6
-    Call out into the darkness -> 7
+    Light a torch -> 7
+    Feel along the walls -> 8
+    Try to listen for sounds (Wisdom check) -> 9,10
 
 3
-    Climb the tall tree -> 8
-    Follow the river -> 9
-    Rest under the oak -> 10
+    # Success - You reach the top of the cliff
 
 4
-    # This is an ending node (no choices)
+    # Failure - You slip and fall, taking damage
 
 5
-    Explore deeper into the cave -> 11
-    Examine the cave paintings -> 12
+    Climb the tall tree -> 11
+    Try to decipher the ancient runes (Intelligence check) -> 12,13
+    Rest under the oak -> 14
 
 6
-    Continue forward carefully -> 13
-    Turn back -> 1
+    # This is an ending node (no choices)
 
 7
-    # Another ending node
+    Explore deeper into the cave -> 15
+    Examine the cave paintings -> 16
 
 8
-    # Ending node
+    Continue forward carefully -> 17
+    Turn back -> 1
 
 9
-    Cross the river -> 14
-    Follow the riverbank -> 15
+    # Success - You hear the faint sound of running water
 
 10
-    # Ending node
+    # Failure - The cave remains eerily silent
 
 11
-    # Ending node
+    # Tree climbing scene
 
 12
-    Touch the ancient symbols -> 16
-    Leave the paintings alone -> 11
+    # Success - You understand the ancient text
 
 13
-    # Ending node
+    # Failure - The runes remain mysterious
 
 14
-    # Ending node
+    # Peaceful rest ending
 
 15
-    # Ending node
+    Try to squeeze through the narrow passage (Dexterity check) -> 18,19
+    Look for another way -> 20
 
 16
-    # Ending node
+    Touch the ancient symbols -> 21
+    Leave the paintings alone -> 15
+
+17
+    # Careful progress scene
+
+18
+    # Success - You slip through the passage
+
+19
+    # Failure - You get stuck
+
+20
+    # Alternative route
+
+21
+    # Touching symbols scene

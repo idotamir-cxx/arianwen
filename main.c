@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "game_types.h"
 #include "file_loader.h"
 #include "save_system.h"
@@ -17,37 +18,43 @@ int num_nodes = 0;
 // Function prototypes
 void play_game(int start_node);
 void cleanup();
+int roll_3d6();
+int get_ability_score(const Character *character, const char *ability_name);
+int perform_ability_check(const Character *character, const char *ability_name);
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
         printf("Usage: %s <tree_file> <dialog_file>\n", argv[0]);
         return 1;
     }
-    
+
     printf("Loading adventure game...\n\n");
-    
+
+    // Seed random number generator for ability checks
+    srand(time(NULL));
+
     // Load files
     if (load_tree_file(argv[1]) != 0) {
         fprintf(stderr, "Error loading tree file: %s\n", argv[1]);
         cleanup();
         return 1;
     }
-    
+
     if (load_dialog_file(argv[2]) != 0) {
         fprintf(stderr, "Error loading dialog file: %s\n", argv[2]);
         cleanup();
         return 1;
     }
-    
+
     printf("Game loaded successfully!\n\n");
-    
+
     // Create saves directory if it doesn't exist
     create_save_directory();
-    
+
     // Show main menu
     int menu_choice = show_main_menu();
     int start_node = 1;
-    
+
     if (menu_choice == 1) {
         // New game - create character first
         if (create_new_character() != 0) {
@@ -69,13 +76,13 @@ int main(int argc, char *argv[]) {
             start_node = 1;
         }
     }
-    
+
     printf("Press Enter to begin...");
     getchar();
-    
+
     // Start the game
     play_game(start_node);
-    
+
     cleanup();
     return 0;
 }
@@ -83,7 +90,7 @@ int main(int argc, char *argv[]) {
 void play_game(int start_node) {
     int current_node = start_node;
     int first_screen = 1;  // Don't clear on first display
-    
+
     while (1) {
         TreeNode *node = find_node(current_node);
         if (!node) {
@@ -91,16 +98,16 @@ void play_game(int start_node) {
             printf("Error: Invalid node %d\n", current_node);
             break;
         }
-        
+
         // Clear screen before displaying new content (except first time)
         if (!first_screen) {
             clear_screen();
         }
         first_screen = 0;
-        
+
         // Display character status
         display_character_status();
-        
+
         // Display dialog for current node
         DialogEntry *dialog = find_dialog(current_node);
         if (dialog) {
@@ -108,7 +115,7 @@ void play_game(int start_node) {
         } else {
             printf("Node %d: [No dialog text found]\n\n", current_node);
         }
-        
+
         // Check if this is an ending (no choices)
         if (node->num_choices == 0) {
             printf("=== THE END ===\n");
@@ -119,38 +126,42 @@ void play_game(int start_node) {
             getchar();
             break;
         }
-        
+
         // Display choices
         printf("What do you choose?\n");
         for (int i = 0; i < node->num_choices; i++) {
-            printf("%d) %s\n", i + 1, node->choices[i].choice_text);
+            printf("%d) %s", i + 1, node->choices[i].choice_text);
+            if (node->choices[i].choice_type == CHOICE_ABILITY_CHECK) {
+                printf(" (requires 3d6 ≤ %d)", get_ability_score(&current_character, node->choices[i].ability_name));
+            }
+            printf("\n");
         }
-        
+
         // Add save and exit options
         int save_option = node->num_choices + 1;
         int exit_option = node->num_choices + 2;
-        
+
         printf("%d) Save Game\n", save_option);
         printf("%d) Exit Game\n", exit_option);
-        
+
         // Get user input
         printf("\nEnter your choice (1-%d): ", exit_option);
         int choice;
         if (scanf("%d", &choice) != 1 || choice < 1 || choice > exit_option) {
             printf("Invalid choice. Please try again.\n");
             printf("Press Enter to continue...");
-            
+
             // Clear input buffer
             int c;
             while ((c = getchar()) != '\n' && c != EOF);
             getchar();  // Wait for Enter
             continue;
         }
-        
+
         // Clear input buffer after successful input
         int c;
         while ((c = getchar()) != '\n' && c != EOF);
-        
+
         // Handle special choices
         if (choice == save_option) {
             // Save game
@@ -173,19 +184,68 @@ void play_game(int start_node) {
             printf("Are you sure you want to exit? (y/N): ");
             char confirm;
             scanf(" %c", &confirm);
-            
+
             // Clear input buffer
             while ((c = getchar()) != '\n' && c != EOF);
-            
+
             if (confirm == 'y' || confirm == 'Y') {
                 printf("Thanks for playing!\n");
                 break;
             }
             continue;
         }
-        
-        // Move to next node (regular choice)
-        current_node = node->choices[choice - 1].to_id;
+
+        // Handle regular choice (1-indexed to 0-indexed)
+        Choice selected_choice = node->choices[choice - 1];
+
+        if (selected_choice.choice_type == CHOICE_REGULAR) {
+            // Regular choice - move to target node
+            current_node = selected_choice.target.to_id;
+        } else if (selected_choice.choice_type == CHOICE_ABILITY_CHECK) {
+            // Ability check - perform check and move to success/failure node
+            printf("\nPerforming %s check...\n", selected_choice.ability_name);
+
+            if (perform_ability_check(&current_character, selected_choice.ability_name)) {
+                printf("Success! Continuing...\n");
+                current_node = selected_choice.target.check_nodes.success_node;
+            } else {
+                printf("Failure! Continuing...\n");
+                current_node = selected_choice.target.check_nodes.failure_node;
+            }
+
+            printf("Press Enter to continue...");
+            getchar();
+        }
+    }
+}
+
+int roll_3d6() {
+    return (rand() % 6 + 1) + (rand() % 6 + 1) + (rand() % 6 + 1);
+}
+
+int get_ability_score(const Character *character, const char *ability_name) {
+    if (strcmp(ability_name, "Strength") == 0) return character->abilities.strength;
+    if (strcmp(ability_name, "Intelligence") == 0) return character->abilities.intelligence;
+    if (strcmp(ability_name, "Wisdom") == 0) return character->abilities.wisdom;
+    if (strcmp(ability_name, "Dexterity") == 0) return character->abilities.dexterity;
+    if (strcmp(ability_name, "Constitution") == 0) return character->abilities.constitution;
+    if (strcmp(ability_name, "Charisma") == 0) return character->abilities.charisma;
+    return 0; // Unknown ability
+}
+
+int perform_ability_check(const Character *character, const char *ability_name) {
+    int ability_score = get_ability_score(character, ability_name);
+    int roll = roll_3d6();
+
+    printf("Rolling 3d6 vs %s %d: ", ability_name, ability_score);
+    printf("Rolled %d - ", roll);
+
+    if (roll <= ability_score) {
+        printf("SUCCESS!\n");
+        return 1;
+    } else {
+        printf("FAILURE!\n");
+        return 0;
     }
 }
 
@@ -198,4 +258,4 @@ void cleanup() {
         free(tree_nodes);
         tree_nodes = NULL;
     }
-}
+};

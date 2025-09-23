@@ -12,6 +12,11 @@
 #define MAX_CLASS_LENGTH 20
 #define MAX_ALIGNMENT_LENGTH 15
 
+typedef enum {
+    CHOICE_REGULAR,
+    CHOICE_ABILITY_CHECK
+} ChoiceType;
+
 typedef struct {
     int strength;
     int intelligence;
@@ -28,8 +33,16 @@ typedef struct {
 
 typedef struct {
     int from_id;
-    int to_id;
+    ChoiceType choice_type;
     char choice_text[MAX_LINE_LENGTH];
+    char ability_name[20];  // For ability checks
+    union {
+        int to_id;  // For regular choices
+        struct {
+            int success_node;
+            int failure_node;
+        } check_nodes;  // For ability checks
+    } target;
 } Choice;
 
 typedef struct {
