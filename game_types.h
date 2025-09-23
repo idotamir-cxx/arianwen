@@ -13,6 +13,15 @@
 #define MAX_ALIGNMENT_LENGTH 15
 
 typedef struct {
+    int strength;
+    int intelligence;
+    int wisdom;
+    int dexterity;
+    int constitution;
+    int charisma;
+} AbilityScores;
+
+typedef struct {
     int id;
     char text[MAX_TEXT_LENGTH];
 } DialogEntry;
@@ -40,6 +49,7 @@ typedef struct {
     char alignment[MAX_ALIGNMENT_LENGTH];
     int hit_points;
     int max_hit_points;
+    AbilityScores abilities;
 } Character;
 
 // Global variables (declared here, defined in main.c)
@@ -50,4 +60,3 @@ extern int num_dialogs;
 extern int num_nodes;
 
 #endif
-
